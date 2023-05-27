@@ -5,45 +5,56 @@ import os
 
 class MyGame:
 
+    # size - size of the grid
+    # inputEnabled - enable input for user
+    # isGameFinished - check if all elements are visible or not
     myGrid = None
     choice = None
     size = None
     inputEnabled = True
-    isScoreVisible = False
+    isGameFinished = False
+
+    # Method to display game name
     def displayGameName(self):
         os.system("clear")
         print("––––––––––––––––––")
         print("|   PEEK-A-BOO   |")
         print("––––––––––––––––––")
 
+    # Method to initialize Game
     def __init__(self):
         self.size = int(sys.argv[1])
         self.myGrid = MyGrid(self.size)
         if not self.myGrid.isValidSize:
             sys.exit()
-        self.displayGameName()
         self.gameLogic(None)
 
+    # Method to display Game grid, score and menu relevant to the use case
     def gameLogic(self, str):
         # os.system("clear")
         self.displayGameName()
         score = self.myGrid.calcScore()
         self.myGrid.displayGrid()
 
+        # print("score  ", score)
+
         if str != None:
             print(str)
 
         if self.myGrid.areAllElementsVisible() and score >= 0:
             print('\n Your score is {0:.3g} \n'.format(score))
-            self.isScoreVisible = True
+            self.isGameFinished = True
         elif score == -2:
             print('\nYour score is {}\n'.format(0))
+        elif score == -1:
+            print('\nYou cheated - Loser!. Your score is 0!\n')
 
         if self.myGrid.areAllElementsVisible():
             print("\nAll elements are uncovered! Only choice 4 and 5 are eligible\n")
 
         self.displayMenu()
 
+    # Method to display Menu
     def displayMenu(self):
         print("1. Let me select two elements")
         print("2. Uncover one element for me")
@@ -68,9 +79,9 @@ class MyGame:
             case "5":
                 return self.choice5()
             case _:
-                return self.gameLogic("Invalid input")
+                return self.gameLogic("\nInvalid input - Please enter a valid choice\n")
 
-
+    # Method to run choice1
     def choice1(self):
         if self.myGrid.areAllElementsVisible():
             return self.gameLogic(None)
@@ -97,21 +108,29 @@ class MyGame:
         self.inputEnabled = True
         return self.gameLogic(None)
 
+    # Method to run choice2
     def choice2(self):
         if self.myGrid.areAllElementsVisible():
             return self.gameLogic(None)
-        self.myGrid.changeVisibilityRandom()
+        isRandom = input("\nEnter 1 if you want to pass cell coordinates: ")
+        if isRandom == "1":
+            coOrd1 = self.getValidCellEntry()
+            self.myGrid.changeVisibilityRandom(coOrd1)
+        else:
+            self.myGrid.changeVisibilityRandom(None)
         return self.gameLogic(None)
 
+    # Method to run choice3
     def choice3(self):
         if self.myGrid.areAllElementsVisible():
             return self.gameLogic(None)
         self.myGrid.changeVisibilityOfAll()
-        return self.gameLogic("\nYou cheated - Loser!. You're score is 0!\n")
+        return self.gameLogic(None)
 
+    # Method to choice4
     def choice4(self):
         score = self.myGrid.calcScore()
-        if (score > -1) and not self.isScoreVisible:
+        if (score > -1) and not self.isGameFinished:
             print('\nYour Score is {0:.3g} \n'.format(score))
             time.sleep(2)
         elif not self.myGrid.areAllElementsVisible():
@@ -120,12 +139,13 @@ class MyGame:
         self.myGrid = MyGrid(self.size)
         return self.gameLogic(None)
 
+    # Method to run choice5
     def choice5(self):
         if self.myGrid.score >= 0:
             score = self.myGrid.calcScore()
-            if(score > -1) and not self.isScoreVisible:
+            if(score > -1) and not self.isGameFinished:
                 print('\n Your Score is {0:.3g} \n'.format(score))
-            else:
+            elif not self.myGrid.areAllElementsVisible():
                 print("\nScore is not available as game was not finished!")
         print("Thank you for playing!")
         sys.exit()
